@@ -53,12 +53,14 @@ popd
 #=================================================
 ynh_script_progression "Adding $app's configuration files..."
 
+# create log directory in data_dir
 mkdir -p "/var/log/$app"
 ln -s "/var/log/$app" "$data_dir/logs"
 
-mkdir -p "$install_dir/config"
-chmod 400 "$install_dir/config"
-chown "$app:$app" "$install_dir/config"
+# create config directory in data_dir
+chmod 755 "$data_dir/config"
+chown -R "$app:$app" "$data_dir/config"
+ln -s "$data_dir/config" "$install_dir/backend/config"
 
 #=================================================
 # SYSTEM CONFIGURATION
@@ -70,7 +72,7 @@ ynh_config_add_nginx
 
 # Create a dedicated systemd config
 ynh_config_add_systemd
-yunohost service add "$app" --description="Profilarr daemon" --log="/var/log/$app/backend.log /var/log/$app/frontend.log"
+yunohost service add "$app" --description="Profilarr backend" --log="/var/log/$app/backend.log"
 
 # Use logrotate to manage application logfile(s)
 ynh_config_add_logrotate "/var/log/$app/"

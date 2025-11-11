@@ -57,11 +57,9 @@ ynh_config_remove_nginx
 ynh_safe_rm "/tmp/$app-backend.pid"
 ynh_safe_rm "/tmp/$app-frontend.pid"
 
-# Remove the start script
-ynh_safe_rm "$install_dir/start.sh"
-
 # Remove the symlink to logs directory (if it exists)
 ynh_safe_rm "$data_dir/logs"
+ynh_safe_rm "$install_dir/backend/config"
 
 # Remove other various files specific to the app... such as:
 ynh_safe_rm "/etc/cron.d/$app"
