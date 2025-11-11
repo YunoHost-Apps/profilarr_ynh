@@ -76,4 +76,4 @@ ram.runtime = "50M"
     version = "18"
 
     [resources.apt]
-    packages = ""
+    packages = "gcc python3-dev libyaml-dev"

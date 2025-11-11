@@ -32,8 +32,6 @@ chown -R "$app:www-data" "$install_dir"
 
 pushd $install_dir
     # Install backend dependencies
-    ynh_install_app_dependencies "gcc python3-dev libyaml-dev"
-
     ynh_script_progression "Installing backend dependencies..."
     ynh_exec_as_app python3 -m venv "$install_dir/backend/venv"
     ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel
