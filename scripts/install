@@ -15,9 +15,12 @@ ynh_script_progression "Setting up source files..."
 # Download the source code to /tmp/$app because we need just some folder for building the app
 ynh_setup_source --dest_dir="/tmp/$app"
 
+mkdir -p "$install_dir/backend"
+mkdir -p "$install_dir/web"
+
 pushd "/tmp/$app"
-    cp backend $install_dir/backend
-    cp frontend $install_dir/web
+    cp -r backend/* $install_dir/backend/
+    cp -r frontend/* $install_dir/web/
 popd
 
 rm -rf /tmp/$app
