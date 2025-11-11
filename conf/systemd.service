@@ -7,6 +7,8 @@ Type=simple
 User=__APP__
 Group=__APP__
 WorkingDirectory=__INSTALL_DIR__/backend
+# Mount data_dir/config as /config for Docker compatibility
+BindPaths=__DATA_DIR__/config:/config
 ExecStart=__INSTALL_DIR__/backend/venv/bin/python3 -m app.main --host 127.0.0.1 --port __PORT__
 StandardOutput=append:/var/log/__APP__/backend.log
 StandardError=inherit

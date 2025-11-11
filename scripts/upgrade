@@ -32,61 +32,78 @@ ynh_systemctl --service="$app" --action="stop"
 #=================================================
 ynh_script_progression "Ensuring downward compatibility..."
 
-ynh_app_setting_set_default --key=php_upload_max_filesize --value=50M
-ynh_app_setting_set_default --key=php_post_max_size --value=50M
-
-### N.B. : the following setting migration snippets are provided as *EXAMPLES*
-### of what you may want to do in some cases (e.g. a setting was not defined on
-### some legacy installs and you therefore want to initiaze stuff during upgrade)
-
-# If db_name doesn't exist, create it
-# ynh_app_setting_set_default --key=db_name --value="$(ynh_sanitize_dbid --db_name=$app)"
-
-# If install_dir doesn't exist, create it
-# ynh_app_setting_set_default --key=install_dir --value="/var/www/$app"
+# Nothing to do for now
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-### ynh_setup_source can wipe the destination dir if called with --full_replace.
-### On upgrade, that is certainly what you want, to remove any old source file that
-### does not exist in the new version of the software.
-### You can list with --keep every file/directory to *not* wipe or overwrite,
-### useful for configuration files, data directories, or plugins.
-# Download, check integrity, uncompress and patch the source from manifest.toml
-ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env data"
+# Download the source code to /tmp/$app
+ynh_setup_source --dest_dir="/tmp/$app"
 
-### $install_dir will automatically be initialized with some decent
-### permissions by default... however, you may need to recursively reapply
-### ownership to all files such as after the ynh_setup_source step
+# Backup venv if it exists
+if [ -d "$install_dir/backend/venv" ]; then
+    mv "$install_dir/backend/venv" "/tmp/${app}_venv_backup"
+fi
+
+# Update backend files
+rm -rf "$install_dir/backend"
+mkdir -p "$install_dir/backend"
+cp -r /tmp/$app/backend/* "$install_dir/backend/"
+
+# Restore venv if it was backed up
+if [ -d "/tmp/${app}_venv_backup" ]; then
+    mv "/tmp/${app}_venv_backup" "$install_dir/backend/venv"
+fi
+
+# Update frontend files
+rm -rf "$install_dir/web"
+mkdir -p "$install_dir/web"
+cp -r /tmp/$app/frontend/* "$install_dir/web/"
+
+rm -rf /tmp/$app
+
 chown -R "$app:www-data" "$install_dir"
+
+pushd $install_dir
+    # Update backend dependencies
+    ynh_script_progression "Updating backend dependencies..."
+    ynh_replace_regex --match="PyYAML==5.4.1" --replace="PyYAML==6.0.1" --file="$install_dir/backend/requirements.txt"
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade -r "$install_dir/backend/requirements.txt"
+
+    # Update frontend dependencies
+    ynh_script_progression "Updating frontend dependencies..."
+    pushd "$install_dir/web"
+        ynh_hide_warnings ynh_exec_as_app npm install
+
+        ynh_script_progression "Building frontend..."
+        ynh_hide_warnings ynh_exec_as_app npm run build
+    popd
+popd
 
 #=================================================
 # UPDATE A CONFIG FILE
 #=================================================
 ynh_script_progression "Updating $app's configuration files..."
 
-### Same as during install
-###
-### The file will automatically be backed-up if it's found to be manually modified (because
-### ynh_config_add keeps track of the file's checksum)
+# Ensure log directory exists with proper permissions
+mkdir -p "/var/log/$app"
+chown -R "$app:$app" "/var/log/$app"
+chmod 755 "/var/log/$app"
 
-ynh_config_add --template="some_config_file" --destination="$install_dir/some_config_file"
+# Ensure config directory exists with proper permissions  
+mkdir -p "$data_dir/config"
+mkdir -p "$data_dir/config/log"
+chown -R "$app:$app" "$data_dir/config"
+chmod 755 "$data_dir/config"
+chmod 755 "$data_dir/config/log"
 
-# FIXME: this should be handled by the core in the future
-### You may need to use chmod 600 instead of 400,
-### for example if the app is expected to be able to modify its own config
-chmod 400 "$install_dir/some_config_file"
-chown "$app:$app" "$install_dir/some_config_file"
-
-### For more complex cases where you want to replace stuff using regexes,
-### you shoud rely on ynh_replace (which is basically a wrapper for sed)
-### When doing so, you also need to manually call ynh_store_file_checksum
-###
-### ynh_replace --match="match_string" --replace="replace_string" --file="$install_dir/some_config_file"
-### ynh_store_file_checksum "$install_dir/some_config_file"
+# Ensure symbolic link to logs exists
+if [ ! -L "$data_dir/logs" ]; then
+    ln -s "/var/log/$app" "$data_dir/logs"
+fi
 
 #=================================================
 # REAPPLY SYSTEM CONFIGURATION
@@ -95,17 +112,13 @@ ynh_script_progression "Upgrading system configurations related to $app..."
 
 ### This should be a literal copypaste of what happened in the install's "System configuration" section
 
-ynh_config_add_phpfpm
-
 ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="A short description of the app" --log="/var/log/$app/$app.log"
+yunohost service add "$app" --description="Profilarr backend" --log="/var/log/$app/$app.log"
 
-ynh_config_add_logrotate
-
-ynh_config_add_fail2ban --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
+ynh_config_add_logrotate "/var/log/$app/"
 
 #=================================================
 # START SYSTEMD SERVICE
