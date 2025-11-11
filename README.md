@@ -4,22 +4,22 @@ It shall NOT be edited by hand.
 -->
 
 <h1>
-  <img src="https://avatars.githubusercontent.com/u/171363348?s=48&v=4" width="32px" alt="Logo of Profilarr">
+  <img src="https://raw.githubusercontent.com/YunoHost/apps/main/logos/profilarr.png" width="32px" alt="Logo of Profilarr">
   Profilarr, packaged for YunoHost
 </h1>
 
 Configuration management tool for Radarr/Sonarr that automates importing and version control of custom formats and quality profiles.
 
 [![🌐 Official app website](https://img.shields.io/badge/Official_app_website-darkgreen?style=for-the-badge)](https://dictionarry.dev/)
-[![Version: 1.0~ynh1](<https://img.shields.io/badge/Version-1.0~ynh1-rgb(18,138,11)?style=for-the-badge>)](https://ci-apps.yunohost.org/ci/apps/profilarr/)
+[![Version: 1.0~ynh1](https://img.shields.io/badge/Version-1.0~ynh1-rgb(18,138,11)?style=for-the-badge)](https://ci-apps.yunohost.org/ci/apps/profilarr/)
 
 <div align="center">
 <a href="https://apps.yunohost.org/app/profilarr"><img height="100px" src="https://github.com/YunoHost/yunohost-artwork/raw/refs/heads/main/badges/neopossum-badges/badge_more_info_on_the_appstore.svg"/></a>
 <a href="https://github.com/YunoHost-Apps/profilarr_ynh/issues"><img height="100px" src="https://github.com/YunoHost/yunohost-artwork/raw/refs/heads/main/badges/neopossum-badges/badge_report_an_issue.svg"/></a>
 </div>
 
-## Screenshots
 
+## Screenshots
 ![Screenshot of Profilarr](./doc/screenshots/preview.png)
 
 ## 📦 Developer info
@@ -31,7 +31,6 @@ Configuration management tool for Radarr/Sonarr that automates importing and ver
 Pull request are welcome and should target the [`testing` branch](https://github.com/YunoHost-Apps/profilarr_ynh/tree/testing).
 
 The `testing` branch can be tested using:
-
 ```
 # fresh install:
 sudo yunohost app install https://github.com/YunoHost-Apps/profilarr_ynh/tree/testing
