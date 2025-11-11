@@ -58,6 +58,7 @@ mkdir -p "/var/log/$app"
 ln -s "/var/log/$app" "$data_dir/logs"
 
 # create config directory in data_dir
+mkdir -p "$data_dir/config"
 chmod 755 "$data_dir/config"
 chown -R "$app:$app" "$data_dir/config"
 ln -s "$data_dir/config" "$install_dir/backend/config"
