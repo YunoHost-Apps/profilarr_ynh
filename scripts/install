@@ -33,8 +33,9 @@ chown -R "$app:www-data" "$install_dir"
 pushd $install_dir
     # Install backend dependencies
     ynh_script_progression "Installing backend dependencies..."
-    ynh_exec_as_app python3.9 -m venv "$install_dir/backend/venv"
+    ynh_exec_as_app python3 -m venv "$install_dir/backend/venv"
     ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir Cython
     ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade -r "$install_dir/backend/requirements.txt"
 
     # Install frontend dependencies

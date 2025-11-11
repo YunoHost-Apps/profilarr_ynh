@@ -13,7 +13,7 @@ cleanup() {
 trap cleanup SIGTERM SIGINT
 
 cd "$INSTALL_DIR/backend"
-/venv/bin/python3 -m app.main --host 127.0.0.1 --port __PORT_BACKEND__ >> "$LOG_DIR/backend.log" 2>&1 &
+"$INSTALL_DIR/backend/venv/bin/python3" -m app.main --host 127.0.0.1 --port __PORT_BACKEND__ >> "$LOG_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
 
 cd "$INSTALL_DIR/web"
