@@ -7,6 +7,9 @@ Type=simple
 User=__APP__
 Group=__APP__
 WorkingDirectory=__INSTALL_DIR__/backend
+Environment="CONFIG_DIR=__DATA_DIR__/config"
+Environment="HOST=127.0.0.1"
+Environment="PORT=__PORT__"
 ExecStart=__INSTALL_DIR__/backend/venv/bin/python3 -m app.main --config-dir __DATA_DIR__/config --host 127.0.0.1 --port __PORT__
 StandardOutput=append:/var/log/__APP__/backend.log
 StandardError=inherit

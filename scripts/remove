@@ -59,7 +59,13 @@ ynh_safe_rm "/tmp/$app-frontend.pid"
 
 # Remove the symlink to logs directory (if it exists)
 ynh_safe_rm "$data_dir/logs"
-ynh_safe_rm "$install_dir/backend/config"
+
+# Clean up /config if it's a symlink created by this app
+# (from previous versions that used BindPaths workaround)
+if [ -L "/config" ]; then
+    ynh_print_info "Removing /config symlink..."
+    rm -f "/config"
+fi
 
 # Remove other various files specific to the app... such as:
 ynh_safe_rm "/etc/cron.d/$app"
