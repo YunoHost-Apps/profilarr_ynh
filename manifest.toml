@@ -70,7 +70,7 @@ ram.runtime = "50M"
     main.url = "/"
 
     [resources.ports]
-    backend.port = 5000
+    main.default = 5000
 
     [resources.nodejs]
     version = "18"
