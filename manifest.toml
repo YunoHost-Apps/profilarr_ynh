@@ -46,7 +46,7 @@ ram.runtime = "50M"
 
     [install.init_main_permission]
     type = "group"
-    default = "all_users"
+    default = "visitors"
 
     [install.admin]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
