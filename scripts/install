@@ -33,6 +33,7 @@ chown -R "$app:www-data" "$install_dir"
 pushd $install_dir
     # Install backend dependencies
     ynh_script_progression "Installing backend dependencies..."
+    ynh_replace_regex --match="PyYAML==5.4.1" --replace="PyYAML==6.0.1" --file="$install_dir/backend/requirements.txt"
     ynh_exec_as_app python3 -m venv "$install_dir/backend/venv"
     ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade "pip>=23.0" "setuptools<66" "wheel"
     ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir Cython
