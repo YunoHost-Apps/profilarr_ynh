@@ -76,4 +76,7 @@ ram.runtime = "50M"
     version = "18"
 
     [resources.apt]
-    packages = "gcc python3-dev libyaml-dev python3.9 python3.9-dev python3.9-venv"
+    packages = "gcc python3-dev libyaml-dev "
+
+    extras.python39.repo = "deb http://deb.debian.org/debian bullseye-backports main"
+    extras.python39.packages = "python3.9 python3.9-dev python3.9-venv"
