@@ -40,10 +40,12 @@ pushd $install_dir
 
     # Install frontend dependencies
     ynh_script_progression "Installing frontend dependencies..."
-    ynh_hide_warnings ynh_exec_as_app npm install
-    
-    ynh_script_progression "Building frontend..."
-    ynh_hide_warnings ynh_exec_as_app npm run build
+    pushd "$install_dir/web"
+        ynh_hide_warnings ynh_exec_as_app npm install
+
+        ynh_script_progression "Building frontend..."
+        ynh_hide_warnings ynh_exec_as_app npm run build
+    popd
 popd
 
 #=================================================
