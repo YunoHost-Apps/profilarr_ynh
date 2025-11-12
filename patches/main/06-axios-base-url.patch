@@ -54,8 +54,9 @@ diff --git a/frontend/src/api/settings.js b/frontend/src/api/settings.js
 index 1111111..2222222 100644
 --- a/frontend/src/api/settings.js
 +++ b/frontend/src/api/settings.js
-@@ -1,5 +1,7 @@
+@@ -1,6 +1,8 @@
  // @api/settings.js
+ import Alert from '@ui/Alert';
 -const API_PREFIX = '/api';
 +// Use BASE_URL for sub-path deployments (e.g., /profilarr)
 +const BASE_URL = import.meta.env.BASE_URL || '/';
@@ -404,7 +405,16 @@ index 1111111..2222222 100644
              validateStatus: status => {
                  return (status >= 200 && status < 300) || status === 409;
              }
-@@ -61,7 +61,7 @@ export const saveArrConfig = async config => {
+@@ -76,7 +76,7 @@ export const updateArrConfig = async (id, config) => {
+             }
+         }
+ 
+-        const response = await axios.put(`/api/arr/config/${id}`, validatedConfig, {
++        const response = await axios.put(`api/arr/config/${id}`, validatedConfig, {
+             validateStatus: status => {
+                 return (status >= 200 && status < 300) || status === 409;
+             }
+@@ -96,7 +96,7 @@ export const updateArrConfig = async (id, config) => {
  
  export const getArrConfigs = async () => {
      try {
@@ -413,7 +423,7 @@ index 1111111..2222222 100644
          return response.data;
      } catch (error) {
          console.error('Error fetching arr configs:', error);
-@@ -71,7 +71,7 @@ export const getArrConfigs = async () => {
+@@ -106,7 +106,7 @@ export const getArrConfigs = async () => {
  
  export const deleteArrConfig = async id => {
      try {
@@ -422,15 +432,17 @@ index 1111111..2222222 100644
          return response.data;
      } catch (error) {
          console.error('Error deleting arr config:', error);
-@@ -81,7 +81,7 @@ export const deleteArrConfig = async id => {
+@@ -115,7 +115,9 @@ export const deleteArrConfig = async id => {
+ };
  
- export const updateArrConfig = async (id, config) => {
+ export const triggerSync = async configId => {
++    const BASE_URL = import.meta.env.BASE_URL || '/';
      try {
--        const response = await axios.put(`/api/arr/config/${id}`, config);
-+        const response = await axios.put(`api/arr/config/${id}`, config);
-         return response.data;
-     } catch (error) {
-         console.error('Error updating arr config:', error);
+-        const response = await fetch(`/api/arr/config/${configId}/sync`, {
++        const response = await fetch(`${BASE_URL.replace(/\/$/, '')}/api/arr/config/${configId}/sync`, {
+             method: 'POST',
+             headers: {
+                 'Content-Type': 'application/json'
 
 diff --git a/frontend/src/api/task.js b/frontend/src/api/task.js
 index 1111111..2222222 100644
