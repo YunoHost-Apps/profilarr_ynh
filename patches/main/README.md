@@ -91,23 +91,37 @@ FRONTEND_DIR=/var/www/profilarr/web/dist python3 -m app.main
 
 ### 06-axios-base-url.patch
 
-**File:** `frontend/src/App.jsx`
+**Files Modified:**
+-   `frontend/src/App.jsx` - Configure axios baseURL globally
+-   `frontend/src/api/*.js` - Fix all API calls for sub-path compatibility
 
-Configures axios globally to prepend the base URL to all API calls. This ensures API requests work correctly on sub-path deployments.
+Configures axios globally and fixes all API calls to work correctly with sub-path deployments (e.g., `/profilarr`).
 
 **Changes:**
 
--   Imports axios in `App.jsx`
--   Sets `axios.defaults.baseURL = import.meta.env.BASE_URL;` at component initialization
--   All axios calls across the app (e.g., `/api/settings`) become `/profilarr/api/settings` automatically
+1. **App.jsx:** Imports axios and sets `axios.defaults.baseURL = import.meta.env.BASE_URL;` at component initialization
+
+2. **API files using fetch() (auth.js, backup.js, settings.js):**
+   - Modifies `API_PREFIX` to include the base URL from environment
+   - `const API_PREFIX = '/api'` → `const API_PREFIX = '${BASE_URL.replace(/\/$/, '')}/api'`
+
+3. **API files using axios with BASE_URL constants (data.js, logs.js, mediaManagement.js, import.js):**
+   - Prefixes the BASE_URL/API_URL constants with environment base URL
+   - e.g., `const BASE_URL = '/api/data'` → `const BASE_URL = '${ENV_BASE_URL.replace(/\/$/, '')}/api/data'`
+
+4. **API files using axios with absolute URLs (api.js, arr.js, task.js):**
+   - Converts absolute URLs to relative URLs by removing leading `/`
+   - e.g., `axios.get('/api/settings')` → `axios.get('api/settings')`
+   - This allows axios to correctly prepend the baseURL configured in App.jsx
 
 **Why this is needed:**
 
 -   Vite's `base` config only affects static assets, not runtime API calls
 -   Without this, the frontend makes API calls to `/api/...` instead of `/profilarr/api/...`
--   React Router `basename` only affects navigation, not axios requests
--   Configuring axios globally in App.jsx applies to all API files (api.js, import.js, arr.js, etc.)
--   This patch ensures `axios.get('/api/settings')` correctly calls `/profilarr/api/settings`
+-   React Router `basename` only affects navigation, not API requests
+-   **Critical:** axios does NOT prepend `baseURL` when URLs start with `/` (absolute URLs)
+-   By making URLs relative (without leading `/`), axios correctly prepends the base path
+-   For fetch() calls, we must manually construct the full path with the base URL
 
 ## Why Patches?
 
