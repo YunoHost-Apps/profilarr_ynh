@@ -23,7 +23,7 @@ pushd "/tmp/$app"
     cp -r frontend/* $install_dir/web/
 popd
 
-rm -rf /tmp/$app
+ynh_safe_rm "/tmp/$app"
 
 #=================================================
 # SETUP THE APP
