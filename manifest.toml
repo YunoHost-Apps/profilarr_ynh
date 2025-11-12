@@ -5,7 +5,7 @@ packaging_format = 2
 id = "profilarr"
 name = "Profilarr"
 description.en = "Configuration management tool for Radarr/Sonarr that automates importing and version control of custom formats and quality profiles."
-description.fr = ""
+description.fr = "Outil de gestion de configuration pour Radarr/Sonarr qui automatise l'importation des formats personnalisés et des profils de qualité."
 
 version = "1.0~ynh1"
 
