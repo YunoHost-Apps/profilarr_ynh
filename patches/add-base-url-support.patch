@@ -1,0 +1,15 @@
+diff --git a/frontend/vite.config.js b/frontend/vite.config.js
+index 1111111..2222222 100644
+--- a/frontend/vite.config.js
++++ b/frontend/vite.config.js
+@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
+ import path from 'path';
+ 
+ export default defineConfig({
++    // Support for sub-path deployments (e.g., /profilarr)
++    // Read from BASE_URL env var set during build
++    base: process.env.BASE_URL || '/',
+     plugins: [
+         react({
+             include: ['**/*.jsx', '**/*.svg']
+
