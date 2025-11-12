@@ -44,6 +44,8 @@ ynh_setup_source --dest_dir="/tmp/$app"
 
 # Backup venv if it exists
 if [ -d "$install_dir/backend/venv" ]; then
+    # Remove any existing backup first to avoid conflicts
+    ynh_safe_rm "/tmp/${app}_venv_backup"
     mv "$install_dir/backend/venv" "/tmp/${app}_venv_backup"
 fi
 
@@ -56,6 +58,9 @@ cp -r /tmp/$app/backend/* "$install_dir/backend/"
 if [ -d "/tmp/${app}_venv_backup" ]; then
     mv "/tmp/${app}_venv_backup" "$install_dir/backend/venv"
 fi
+
+# Clean up temporary venv backup (in case restore failed)
+ynh_safe_rm "/tmp/${app}_venv_backup"
 
 # Update frontend files
 ynh_safe_rm "$install_dir/web"
