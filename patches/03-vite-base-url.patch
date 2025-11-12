@@ -7,7 +7,7 @@ index 1111111..2222222 100644
  
  export default defineConfig({
 +    // Support for sub-path deployments (e.g., /profilarr)
-+    // Read from BASE_URL env var set during build
++    // Set BASE_URL env var during build: BASE_URL=/profilarr npm run build
 +    base: process.env.BASE_URL || '/',
      plugins: [
          react({
