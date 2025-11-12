@@ -34,8 +34,13 @@ ynh_config_change_url_nginx
 
 pushd $install_dir/web
     ynh_script_progression "Rebuilding frontend with new base path $path..."
-    # BASE_URL must end with / for Vite to generate correct asset paths
-    ynh_hide_warnings ynh_exec_as_app BASE_URL="$path/" npm run build
+    # Add trailing slash only if path doesn't already end with one
+    if [ "$path" = "/" ]; then
+        base_url="/"
+    else
+        base_url="$path/"
+    fi
+    ynh_hide_warnings ynh_exec_as_app BASE_URL="$base_url" npm run build
 popd
 
 #=================================================
