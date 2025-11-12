@@ -12,8 +12,7 @@ version = "1.0~ynh1"
 maintainers = ["bowgartfield"]
 
 [upstream]
-# NB: Only the "license" key is mandatory. Remove entries for which there's no relevant data
-license = "free" # you can see the available licenses identifiers list here: https://spdx.org/licenses/
+license = "GPL-3.0-only"
 website = "https://dictionarry.dev/"
 #admindoc = "https://yunohost.org/packaging_apps"
 #userdoc = "https://yunohost.org/apps"
