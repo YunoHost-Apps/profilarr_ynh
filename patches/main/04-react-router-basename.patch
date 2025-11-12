@@ -1,0 +1,15 @@
+diff --git a/frontend/src/App.jsx b/frontend/src/App.jsx
+index 1111111..2222222 100644
+--- a/frontend/src/App.jsx
++++ b/frontend/src/App.jsx
+@@ -140,7 +140,8 @@ function App() {
+ 
+     return (
+         <>
+-            <Router>
++            {/* Use BASE_URL from Vite config for sub-path deployments */}
++            <Router basename={import.meta.env.BASE_URL}>
+                 <ErrorBoundary>
+                     <div className='min-h-screen flex flex-col bg-gray-900 text-gray-100'>
+                         <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+

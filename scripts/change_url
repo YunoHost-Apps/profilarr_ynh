@@ -26,11 +26,27 @@ ynh_script_progression "Updating NGINX web server configuration..."
 # this will most likely adjust NGINX config correctly
 ynh_config_change_url_nginx
 
+# Enable trailing slash redirect for sub-paths only (not for root "/")
+if [ "$path" != "/" ]; then
+    sed -i 's/#sub_path_only //' "/etc/nginx/conf.d/$domain.d/$app.conf"
+fi
+
 #=================================================
 # SPECIFIC MODIFICATIONS
 #=================================================
 
 ## do any changes to files that reference specific installation domain/path, i.e. regenerate configs etc
+
+pushd $install_dir/web
+    ynh_script_progression "Rebuilding frontend with new base path $path..."
+    # Add trailing slash only if path doesn't already end with one
+    if [ "$path" = "/" ]; then
+        base_url="/"
+    else
+        base_url="$path/"
+    fi
+    ynh_hide_warnings ynh_exec_as_app BASE_URL="$base_url" npm run build
+popd
 
 #=================================================
 # START SYSTEMD SERVICE

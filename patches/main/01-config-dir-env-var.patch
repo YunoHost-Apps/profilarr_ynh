@@ -1,0 +1,15 @@
+diff --git a/backend/app/config/config.py b/backend/app/config/config.py
+index 6d70114..0f606c9 100644
+--- a/backend/app/config/config.py
++++ b/backend/app/config/config.py
+@@ -4,7 +4,8 @@ import logging
+ 
+ class Config:
+     # Base Paths
+-    CONFIG_DIR = '/config'
++    # CONFIG_DIR can be overridden via environment variable (default: /config for Docker compatibility)
++    CONFIG_DIR = os.getenv('CONFIG_DIR', '/config')
+     DB_PATH = os.path.join(CONFIG_DIR, 'profilarr.db')
+     DB_DIR = os.path.join(CONFIG_DIR, 'db')
+ 
+

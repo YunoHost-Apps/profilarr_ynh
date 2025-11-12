@@ -1,0 +1,37 @@
+diff --git a/backend/app/main.py b/backend/app/main.py
+index efcb54c..dc78bfd 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -91,5 +91,30 @@ def create_app():
+ 
+ 
+ if __name__ == '__main__':
++    import argparse
++    
++    # Parse command line arguments with environment variable fallbacks
++    parser = argparse.ArgumentParser(description='Run Profilarr backend server')
++    parser.add_argument('--config-dir',
++                       default=os.environ.get('CONFIG_DIR', '/config'),
++                       help='Configuration directory path (default: /config, env: CONFIG_DIR)')
++    parser.add_argument('--host', 
++                       default=os.environ.get('HOST', '0.0.0.0'),
++                       help='Host to bind to (default: 0.0.0.0, env: HOST)')
++    parser.add_argument('--port', 
++                       type=int,
++                       default=int(os.environ.get('PORT', '5000')),
++                       help='Port to bind to (default: 5000, env: PORT)')
++    parser.add_argument('--debug', 
++                       action='store_true',
++                       default=os.environ.get('DEBUG', 'false').lower() in ('true', '1', 'yes'),
++                       help='Enable debug mode (default: False, env: DEBUG)')
++    
++    args = parser.parse_args()
++    
++    # Set CONFIG_DIR in environment so Config class can use it
++    os.environ['CONFIG_DIR'] = args.config_dir
++    
+     app = create_app()
+-    app.run(debug=True, host='0.0.0.0')
++    print(f"Starting Profilarr on {args.host}:{args.port} (debug={args.debug}, config={args.config_dir})")
++    app.run(host=args.host, port=args.port, debug=args.debug)
+
