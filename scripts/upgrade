@@ -48,7 +48,7 @@ if [ -d "$install_dir/backend/venv" ]; then
 fi
 
 # Update backend files
-rm -rf "$install_dir/backend"
+ynh_secure_remove "$install_dir/backend"
 mkdir -p "$install_dir/backend"
 cp -r /tmp/$app/backend/* "$install_dir/backend/"
 
@@ -58,11 +58,11 @@ if [ -d "/tmp/${app}_venv_backup" ]; then
 fi
 
 # Update frontend files
-rm -rf "$install_dir/web"
+ynh_secure_remove "$install_dir/web"
 mkdir -p "$install_dir/web"
 cp -r /tmp/$app/frontend/* "$install_dir/web/"
 
-rm -rf /tmp/$app
+ynh_secure_remove /tmp/$app
 
 chown -R "$app:www-data" "$install_dir"
 
