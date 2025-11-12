@@ -26,6 +26,11 @@ ynh_script_progression "Updating NGINX web server configuration..."
 # this will most likely adjust NGINX config correctly
 ynh_config_change_url_nginx
 
+# Enable trailing slash redirect for sub-paths only (not for root "/")
+if [ "$path" != "/" ]; then
+    sed -i 's/#sub_path_only //' "/etc/nginx/conf.d/$domain.d/$app.conf"
+fi
+
 #=================================================
 # SPECIFIC MODIFICATIONS
 #=================================================

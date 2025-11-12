@@ -40,6 +40,20 @@ Adds support for sub-path deployments (e.g., `/profilarr` instead of `/`) by rea
 BASE_URL=/profilarr npm run build
 ```
 
+### 04-react-router-basename.patch
+**File:** `frontend/src/App.jsx`
+
+Configures React Router to use the correct base path for sub-path deployments. This ensures internal navigation links work correctly when the app is installed on a sub-path.
+
+**Changes:**
+- Adds `basename={import.meta.env.BASE_URL}` prop to the `<Router>` component
+- React Router will prefix all routes with the base path (e.g., `/profilarr`)
+
+**Why this is needed:**
+- Vite's `base` config (patch 03) only affects asset loading (JS/CSS files)
+- React Router needs `basename` to correctly generate navigation URLs
+- Without this, clicking "Media Management" redirects to `/media-management` instead of `/profilarr/media-management`
+
 ## Why Patches?
 
 These patches allow us to use the official upstream Profilarr releases without maintaining a fork. When Profilarr updates, YunoHost can automatically pull the latest version and apply these patches.

@@ -121,6 +121,11 @@ ynh_script_progression "Upgrading system configurations related to $app..."
 
 ynh_config_add_nginx
 
+# Enable trailing slash redirect for sub-paths only (not for root "/")
+if [ "$path" != "/" ]; then
+    sed -i 's/#sub_path_only //' "/etc/nginx/conf.d/$domain.d/$app.conf"
+fi
+
 ynh_config_add_systemd
 
 yunohost service add "$app" --description="Profilarr backend" --log="/var/log/$app/$app.log"
