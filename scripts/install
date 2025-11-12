@@ -83,7 +83,7 @@ ynh_config_add_nginx
 
 # Enable trailing slash redirect for sub-paths only (not for root "/")
 if [ "$path" != "/" ]; then
-    ynh_replace_string --match='#sub_path_only ' --replace='' --file="/etc/nginx/conf.d/$domain.d/$app.conf"
+    ynh_replace --match='#sub_path_only ' --replace='' --file="/etc/nginx/conf.d/$domain.d/$app.conf"
 fi
 
 # Create a dedicated systemd config
