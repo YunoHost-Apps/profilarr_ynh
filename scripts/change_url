@@ -34,7 +34,8 @@ ynh_config_change_url_nginx
 
 pushd $install_dir/web
     ynh_script_progression "Rebuilding frontend with new base path $path..."
-    ynh_hide_warnings ynh_exec_as_app BASE_URL="$path" npm run build
+    # BASE_URL must end with / for Vite to generate correct asset paths
+    ynh_hide_warnings ynh_exec_as_app BASE_URL="$path/" npm run build
 popd
 
 #=================================================

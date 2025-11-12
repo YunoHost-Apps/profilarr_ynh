@@ -45,7 +45,8 @@ pushd $install_dir
 
         ynh_script_progression "Building frontend with base path $path..."
         # Build with the YunoHost path as base URL for proper asset loading
-        ynh_hide_warnings ynh_exec_as_app BASE_URL="$path" npm run build
+        # BASE_URL must end with / for Vite to generate correct asset paths
+        ynh_hide_warnings ynh_exec_as_app BASE_URL="$path/" npm run build
     popd
 popd
 
