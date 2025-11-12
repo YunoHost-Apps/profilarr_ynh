@@ -432,8 +432,7 @@ index 1111111..2222222 100644
          return response.data;
      } catch (error) {
          console.error('Error deleting arr config:', error);
-@@ -115,7 +115,9 @@ export const deleteArrConfig = async id => {
- };
+@@ -116,7 +116,8 @@ export const deleteArrConfig = async id => {
  
  export const triggerSync = async configId => {
 +    const BASE_URL = import.meta.env.BASE_URL || '/';
@@ -443,6 +442,14 @@ index 1111111..2222222 100644
              method: 'POST',
              headers: {
                  'Content-Type': 'application/json'
+             }
+         });
+         return await response.json();
+     } catch (error) {
+         console.error('Error triggering sync:', error);
+         return {success: false, error: error.message};
+     }
+ };
 
 diff --git a/frontend/src/api/task.js b/frontend/src/api/task.js
 index 1111111..2222222 100644
