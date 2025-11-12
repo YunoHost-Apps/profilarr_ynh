@@ -54,6 +54,27 @@ Configures React Router to use the correct base path for sub-path deployments. T
 - React Router needs `basename` to correctly generate navigation URLs
 - Without this, clicking "Media Management" redirects to `/media-management` instead of `/profilarr/media-management`
 
+### 05-flask-serve-frontend.patch
+**File:** `backend/app/main.py`
+
+Makes Flask serve the built frontend files instead of relying on nginx `alias`. This simplifies nginx configuration and avoids SSOwat conflicts.
+
+**Changes:**
+- Reads `FRONTEND_DIR` environment variable to locate the built frontend
+- Changes `static_folder` from `'static'` to the custom path
+- Falls back to `'static'` if `FRONTEND_DIR` is not set (Docker compatibility)
+
+**Why this is needed:**
+- Flask already has code to serve static files and handle SPA routing (lines 32-39)
+- Serving everything through Flask avoids SSOwat intercepting static file requests
+- Nginx configuration becomes a simple `proxy_pass` - no more `alias`, no more SSOwat issues
+- Flask protects API routes with `if path.startswith('api/')` check
+
+**Usage:**
+```bash
+FRONTEND_DIR=/var/www/profilarr/web/dist python3 -m app.main
+```
+
 ## Why Patches?
 
 These patches allow us to use the official upstream Profilarr releases without maintaining a fork. When Profilarr updates, YunoHost can automatically pull the latest version and apply these patches.
