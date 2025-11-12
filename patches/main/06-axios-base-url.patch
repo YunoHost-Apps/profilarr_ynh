@@ -69,13 +69,12 @@ diff --git a/frontend/src/api/data.js b/frontend/src/api/data.js
 index 1111111..2222222 100644
 --- a/frontend/src/api/data.js
 +++ b/frontend/src/api/data.js
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,7 @@
  import axios from 'axios';
  
 -const BASE_URL = '/api/data';
-+// Use BASE_URL from environment for sub-path deployments (e.g., /profilarr)
-+const ENV_BASE_URL = import.meta.env.BASE_URL || '/';
-+const BASE_URL = `${ENV_BASE_URL.replace(/\/$/, '')}/api/data`;
++// Axios will prepend baseURL automatically - use relative path
++const BASE_URL = 'api/data';
  
  // Define all special endpoints that could conflict with resource names
  const SPECIAL_ENDPOINTS = [
@@ -84,14 +83,13 @@ diff --git a/frontend/src/api/logs.js b/frontend/src/api/logs.js
 index 1111111..2222222 100644
 --- a/frontend/src/api/logs.js
 +++ b/frontend/src/api/logs.js
-@@ -1,7 +1,9 @@
+@@ -1,7 +1,8 @@
  // api/logs.js
  import axios from 'axios';
  
 -const BASE_URL = '/api/logs';
-+// Use BASE_URL from environment for sub-path deployments (e.g., /profilarr)
-+const ENV_BASE_URL = import.meta.env.BASE_URL || '/';
-+const BASE_URL = `${ENV_BASE_URL.replace(/\/$/, '')}/api/logs`;
++// Axios will prepend baseURL automatically - use relative path
++const BASE_URL = 'api/logs';
  
  const handleError = (error, operation) => {
      console.error(`Error ${operation}:`, error);
@@ -100,13 +98,12 @@ diff --git a/frontend/src/api/mediaManagement.js b/frontend/src/api/mediaManagem
 index 1111111..2222222 100644
 --- a/frontend/src/api/mediaManagement.js
 +++ b/frontend/src/api/mediaManagement.js
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,7 @@
  import axios from 'axios';
  
 -const BASE_URL = '/api/media-management';
-+// Use BASE_URL from environment for sub-path deployments (e.g., /profilarr)
-+const ENV_BASE_URL = import.meta.env.BASE_URL || '/';
-+const BASE_URL = `${ENV_BASE_URL.replace(/\/$/, '')}/api/media-management`;
++// Axios will prepend baseURL automatically - use relative path
++const BASE_URL = 'api/media-management';
  
  /**
   * Get all media management data for all categories
@@ -115,13 +112,12 @@ diff --git a/frontend/src/api/import.js b/frontend/src/api/import.js
 index 1111111..2222222 100644
 --- a/frontend/src/api/import.js
 +++ b/frontend/src/api/import.js
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,7 @@
  import axios from 'axios';
  
 -const API_URL = '/api/v2/import';
-+// Use BASE_URL from environment for sub-path deployments (e.g., /profilarr)
-+const ENV_BASE_URL = import.meta.env.BASE_URL || '/';
-+const API_URL = `${ENV_BASE_URL.replace(/\/$/, '')}/api/v2/import`;
++// Axios will prepend baseURL automatically - use relative path
++const API_URL = 'api/v2/import';
  
  /**
   * Import formats or profiles to a specified arr instance
