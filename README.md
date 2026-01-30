@@ -11,7 +11,7 @@ It shall NOT be edited by hand.
 Configuration management tool for Radarr/Sonarr that automates importing and version control of custom formats and quality profiles.
 
 [![🌐 Official app website](https://img.shields.io/badge/Official_app_website-darkgreen?style=for-the-badge)](https://dictionarry.dev/)
-[![Version: 1.1.3~ynh1](https://img.shields.io/badge/Version-1.1.3~ynh1-rgb(18,138,11)?style=for-the-badge)](https://ci-apps.yunohost.org/ci/apps/profilarr/)
+[![Version: 1.1.4~ynh1](https://img.shields.io/badge/Version-1.1.4~ynh1-rgb(18,138,11)?style=for-the-badge)](https://ci-apps.yunohost.org/ci/apps/profilarr/)
 
 <div align="center">
 <a href="https://apps.yunohost.org/app/profilarr"><img height="100px" src="https://github.com/YunoHost/yunohost-artwork/raw/refs/heads/main/badges/neopossum-badges/badge_more_info_on_the_appstore.svg"/></a>
