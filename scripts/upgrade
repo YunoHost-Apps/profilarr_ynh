@@ -58,8 +58,8 @@ ynh_script_progression "Deploying $app..."
 
 ynh_safe_rm "$install_dir/profilarr"
 ynh_safe_rm "$install_dir/static"
-cp "$profilarr_build_dir/profilarr" "$install_dir/profilarr"
-cp -r "$profilarr_build_dir/static" "$install_dir/static"
+cp "$profilarr_dist/profilarr" "$install_dir/profilarr"
+cp -r "$profilarr_dist/static" "$install_dir/static"
 chmod 755 "$install_dir/profilarr"
 chown -R "$app:www-data" "$install_dir"
 

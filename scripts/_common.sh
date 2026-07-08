@@ -12,13 +12,19 @@
 
 # Builds the app in a scratch dir under /tmp.
 # Leaves the result at:
-#   $profilarr_build_dir/profilarr  (compiled binary)
-#   $profilarr_build_dir/static     (static assets, required alongside the binary)
+#   $profilarr_dist/profilarr  (compiled binary)
+#   $profilarr_dist/static     (static assets, required alongside the binary)
 # Call profilarr_cleanup_build afterwards to remove all build scratch space.
 profilarr_build_app() {
     profilarr_build_dir="/tmp/${app}_build"
     profilarr_deno_dir="/tmp/${app}_deno_toolchain"
     profilarr_deno_cache_dir="/tmp/${app}_deno_cache"
+    # deno compile + the vite adapter write the final artifacts here. Do NOT
+    # mv them up to $profilarr_build_dir: the upstream source tarball already
+    # ships a top-level static/ folder, so `mv dist/build/static build_dir/static`
+    # would nest into build_dir/static/static/ and the app (which serves from
+    # <exe_dir>/static) would 404 on every asset.
+    profilarr_dist="$profilarr_build_dir/dist/build"
 
     ynh_setup_source --dest_dir="$profilarr_build_dir"
 
@@ -59,9 +65,6 @@ profilarr_build_app() {
             --target "$build_target" \
             --output dist/build/profilarr dist/build/mod.ts
     popd
-
-    mv "$profilarr_build_dir/dist/build/profilarr" "$profilarr_build_dir/profilarr"
-    mv "$profilarr_build_dir/dist/build/static" "$profilarr_build_dir/static"
 }
 
 # Removes all scratch space created by profilarr_build_app
