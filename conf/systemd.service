@@ -6,13 +6,15 @@ After=network.target
 Type=simple
 User=__APP__
 Group=__APP__
-WorkingDirectory=__INSTALL_DIR__/backend
-Environment="CONFIG_DIR=__DATA_DIR__/config"
-Environment="FRONTEND_DIR=__INSTALL_DIR__/web/dist"
+WorkingDirectory=__INSTALL_DIR__
+Environment="APP_BASE_PATH=__DATA_DIR__"
 Environment="HOST=127.0.0.1"
 Environment="PORT=__PORT__"
-ExecStart=__INSTALL_DIR__/backend/venv/bin/python3 -m app.main --config-dir __DATA_DIR__/config --host 127.0.0.1 --port __PORT__
-StandardOutput=append:/var/log/__APP__/backend.log
+Environment="ORIGIN=https://__DOMAIN__"
+# DENO_SQLITE_PATH points at the arch-specific system libsqlite3; computed at
+# start time since it differs between amd64 (x86_64) and arm64 (aarch64).
+ExecStart=/bin/sh -c 'export DENO_SQLITE_PATH="/usr/lib/$(uname -m)-linux-gnu/libsqlite3.so.0"; exec __INSTALL_DIR__/profilarr'
+StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=inherit
 Restart=on-failure
 
