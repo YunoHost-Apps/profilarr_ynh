@@ -36,20 +36,20 @@ profilarr_build_app() {
     fi
 
     pushd "$profilarr_build_dir"
-        ynh_script_progression "Installing dependencies (deno install)..."
+        # Install dependencies (deno install)
         ynh_hide_warnings ynh_exec_as_app env \
             PATH="$profilarr_deno_dir:$PATH" \
             DENO_DIR="$profilarr_deno_cache_dir" \
             deno install --node-modules-dir
 
-        ynh_script_progression "Building the frontend (vite build)..."
+        # Build the frontend (vite build)
         ynh_hide_warnings ynh_exec_as_app env \
             PATH="$profilarr_deno_dir:$PATH" \
             DENO_DIR="$profilarr_deno_cache_dir" \
             APP_BASE_PATH="./dist/build" \
             deno run -A npm:vite build
 
-        ynh_script_progression "Compiling the backend (deno compile)..."
+        # Compile the backend (deno compile)
         ynh_hide_warnings ynh_exec_as_app env \
             PATH="$profilarr_deno_dir:$PATH" \
             DENO_DIR="$profilarr_deno_cache_dir" \
