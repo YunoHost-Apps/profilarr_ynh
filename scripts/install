@@ -64,6 +64,16 @@ ynh_script_progression "Starting $app's systemd service..."
 ynh_systemctl --service="$app" --action="start" --wait_until="Server ready" --log_path="/var/log/$app/$app.log"
 
 #=================================================
+# TEMP DIAGNOSTIC - remove once asset 404 is understood
+#=================================================
+ynh_print_info "DIAG: listing $install_dir/static/_app/immutable/assets"
+ls -la "$install_dir/static/_app/immutable/assets" 2>&1 | head -5 || true
+diag_asset=$(find "$install_dir/static/_app/immutable/assets" -maxdepth 1 -name "0.*.css" | head -1)
+ynh_print_info "DIAG: asset on disk: $diag_asset"
+ynh_print_info "DIAG: direct curl against 127.0.0.1:$port"
+curl -sv "http://127.0.0.1:$port/_app/immutable/assets/$(basename "$diag_asset")" -o /dev/null 2>&1 | tail -30 || true
+
+#=================================================
 # END OF SCRIPT
 #=================================================
 
