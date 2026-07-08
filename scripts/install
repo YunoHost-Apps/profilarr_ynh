@@ -4,57 +4,28 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# DOWNLOAD, CHECK AND UNPACK SOURCE
+# BUILD THE APPLICATION
 #=================================================
-ynh_script_progression "Setting up source files..."
+ynh_script_progression "Building $app (this can take a while)..."
 
-# Download the source code to /tmp/$app because we need just some folder for building the app
-ynh_setup_source --dest_dir="/tmp/$app"
-
-mkdir -p "$install_dir/backend"
-mkdir -p "$install_dir/web"
-
-pushd "/tmp/$app"
-    cp -r backend/* $install_dir/backend/
-    cp -r frontend/* $install_dir/web/
-popd
-
-ynh_safe_rm "/tmp/$app"
+profilarr_build_app
 
 #=================================================
-# SETUP THE APP
+# DEPLOY THE BUILT APPLICATION
 #=================================================
+ynh_script_progression "Deploying $app..."
+
+mkdir -p "$install_dir"
+cp "$profilarr_dist/profilarr" "$install_dir/profilarr"
+cp -r "$profilarr_dist/static" "$install_dir/static"
+chmod 755 "$install_dir/profilarr"
 chown -R "$app:www-data" "$install_dir"
 
-pushd $install_dir
-    # Install backend dependencies
-    ynh_script_progression "Installing backend dependencies..."
-    ynh_replace_regex --match="PyYAML==5.4.1" --replace="PyYAML==6.0.1" --file="$install_dir/backend/requirements.txt"
-    # aiohttp 3.8.5 has no Python 3.13 (Trixie) wheel and fails to build from source; bump to a version with cp313 wheels
-    ynh_replace_regex --match="aiohttp==3.8.5" --replace="aiohttp==3.10.11" --file="$install_dir/backend/requirements.txt"
-    ynh_exec_as_app python3 -m venv "$install_dir/backend/venv"
-    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel
-    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade -r "$install_dir/backend/requirements.txt"
-
-    # Install frontend dependencies
-    ynh_script_progression "Installing frontend dependencies..."
-    pushd "$install_dir/web"
-        ynh_hide_warnings ynh_exec_as_app npm install
-
-        ynh_script_progression "Building frontend with base path $path..."
-        # Build with the YunoHost path as base URL for proper asset loading
-        # Add trailing slash only if path doesn't already end with one
-        if [ "$path" = "/" ]; then
-            base_url="/"
-        else
-            base_url="$path/"
-        fi
-        ynh_hide_warnings ynh_exec_as_app BASE_URL="$base_url" npm run build
-    popd
-popd
+profilarr_cleanup_build
 
 #=================================================
 # APP INITIAL CONFIGURATION
@@ -62,17 +33,12 @@ popd
 ynh_script_progression "Adding $app's configuration files..."
 
 # create log directory in data_dir
+# (the app writes its own logs to $data_dir/logs via APP_BASE_PATH, this
+# symlink makes them show up under the standard /var/log/$app path too)
 mkdir -p "/var/log/$app"
 chown -R "$app:$app" "/var/log/$app"
 chmod 755 "/var/log/$app"
 ln -s "/var/log/$app" "$data_dir/logs"
-
-# create config directory in data_dir
-mkdir -p "$data_dir/config"
-mkdir -p "$data_dir/config/log"
-chmod 755 "$data_dir/config"
-chmod 755 "$data_dir/config/log"
-chown -R "$app:$app" "$data_dir/config"
 
 #=================================================
 # SYSTEM CONFIGURATION
@@ -81,11 +47,6 @@ ynh_script_progression "Adding system configurations related to $app..."
 
 # Create a dedicated NGINX config using the conf/nginx.conf template
 ynh_config_add_nginx
-
-# Enable trailing slash redirect for sub-paths only (not for root "/")
-if [ "$path" != "/" ]; then
-    ynh_replace --match='#sub_path_only ' --replace='' --file="/etc/nginx/conf.d/$domain.d/$app.conf"
-fi
 
 # Create a dedicated systemd config
 ynh_config_add_systemd
@@ -100,7 +61,7 @@ ynh_config_add_logrotate "/var/log/$app/"
 ynh_script_progression "Starting $app's systemd service..."
 
 # Start a systemd service
-ynh_systemctl --service="$app" --action="start"
+ynh_systemctl --service="$app" --action="start" --wait_until="Server ready" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT

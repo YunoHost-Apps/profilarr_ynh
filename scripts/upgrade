@@ -4,7 +4,21 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+source _common.sh
 source /usr/share/yunohost/helpers
+
+### Settings are automatically loaded as bash variables
+### in every app script context, therefore typically these will exist:
+### - $domain
+### - $path
+### - $language
+### - $install_dir
+### - $port
+### ...
+
+### In the context of upgrade,
+### - resources are automatically provisioned / updated / deleted (depending on existing resources)
+### - a safety backup is automatically created by the core and will be restored if the upgrade fails
 
 #=================================================
 # STOP SYSTEMD SERVICE
@@ -14,74 +28,42 @@ ynh_script_progression "Stopping $app's systemd service..."
 ynh_systemctl --service="$app" --action="stop"
 
 #=================================================
-# ENSURE DOWNWARD COMPATIBILITY
+# RESET APP DATA WHEN UPGRADING FROM V1
 #=================================================
-ynh_script_progression "Ensuring downward compatibility..."
 
-# Nothing to do for now
-
-#=================================================
-# DOWNLOAD, CHECK AND UNPACK SOURCE
-#=================================================
-ynh_script_progression "Upgrading source files..."
-
-# Download the source code to /tmp/$app
-ynh_setup_source --dest_dir="/tmp/$app"
-
-# Backup venv if it exists
-if [ -d "$install_dir/backend/venv" ]; then
-    # Remove any existing backup first to avoid conflicts
-    ynh_safe_rm "/tmp/${app}_venv_backup"
-    mv "$install_dir/backend/venv" "/tmp/${app}_venv_backup"
+# Profilarr v2 is a complete rewrite (Python/Flask -> Deno/SvelteKit) with a
+# different database engine and schema. Per upstream, the v1 database format
+# is NOT compatible with v2 and there is no migration path. Data is reset
+# once, the first time an install crosses the 1.x -> 2.x boundary; normal
+# 2.x -> 2.x upgrades never hit this branch.
+if ynh_app_upgrading_from_version_before 2.0.0~ynh1
+then
+    ynh_print_warn "Upgrading from Profilarr v1: v2 uses an incompatible database format (confirmed by upstream, no migration exists). Existing data (database, settings, linked arr configs) will be reset. You will need to go through the setup wizard again after the upgrade."
+    ynh_safe_rm "$data_dir"
+    mkdir -p "$data_dir"
+    chown "$app:$app" "$data_dir"
 fi
 
-# Update backend files
-ynh_safe_rm "$install_dir/backend"
-mkdir -p "$install_dir/backend"
-cp -r /tmp/$app/backend/* "$install_dir/backend/"
+#=================================================
+# BUILD THE APPLICATION
+#=================================================
+ynh_script_progression "Building $app (this can take a while)..."
 
-# Restore venv if it was backed up
-if [ -d "/tmp/${app}_venv_backup" ]; then
-    mv "/tmp/${app}_venv_backup" "$install_dir/backend/venv"
-fi
+profilarr_build_app
 
-# Clean up temporary venv backup (in case restore failed)
-ynh_safe_rm "/tmp/${app}_venv_backup"
+#=================================================
+# DEPLOY THE BUILT APPLICATION
+#=================================================
+ynh_script_progression "Deploying $app..."
 
-# Update frontend files
-ynh_safe_rm "$install_dir/web"
-mkdir -p "$install_dir/web"
-cp -r /tmp/$app/frontend/* "$install_dir/web/"
-
-ynh_safe_rm /tmp/$app
-
+ynh_safe_rm "$install_dir/profilarr"
+ynh_safe_rm "$install_dir/static"
+cp "$profilarr_dist/profilarr" "$install_dir/profilarr"
+cp -r "$profilarr_dist/static" "$install_dir/static"
+chmod 755 "$install_dir/profilarr"
 chown -R "$app:www-data" "$install_dir"
 
-pushd $install_dir
-    # Update backend dependencies
-    ynh_script_progression "Updating backend dependencies..."
-    ynh_replace_regex --match="PyYAML==5.4.1" --replace="PyYAML==6.0.1" --file="$install_dir/backend/requirements.txt"
-    # aiohttp 3.8.5 has no Python 3.13 (Trixie) wheel and fails to build from source; bump to a version with cp313 wheels
-    ynh_replace_regex --match="aiohttp==3.8.5" --replace="aiohttp==3.10.11" --file="$install_dir/backend/requirements.txt"
-    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel
-    ynh_hide_warnings ynh_exec_as_app "$install_dir/backend/venv/bin/pip" install --no-cache-dir --upgrade -r "$install_dir/backend/requirements.txt"
-
-    # Update frontend dependencies
-    ynh_script_progression "Updating frontend dependencies..."
-    pushd "$install_dir/web"
-        ynh_hide_warnings ynh_exec_as_app npm install
-
-        ynh_script_progression "Building frontend with base path $path..."
-        # Build with the YunoHost path as base URL for proper asset loading
-        # Add trailing slash only if path doesn't already end with one
-        if [ "$path" = "/" ]; then
-            base_url="/"
-        else
-            base_url="$path/"
-        fi
-        ynh_hide_warnings ynh_exec_as_app BASE_URL="$base_url" npm run build
-    popd
-popd
+profilarr_cleanup_build
 
 #=================================================
 # UPDATE A CONFIG FILE
@@ -93,15 +75,9 @@ mkdir -p "/var/log/$app"
 chown -R "$app:$app" "/var/log/$app"
 chmod 755 "/var/log/$app"
 
-# Ensure config directory exists with proper permissions  
-mkdir -p "$data_dir/config"
-mkdir -p "$data_dir/config/log"
-chown -R "$app:$app" "$data_dir/config"
-chmod 755 "$data_dir/config"
-chmod 755 "$data_dir/config/log"
-
-# Ensure symbolic link to logs exists
+# Ensure symbolic link to logs exists (also recreates it after a data reset above)
 if [ ! -L "$data_dir/logs" ]; then
+    ynh_safe_rm "$data_dir/logs"
     ln -s "/var/log/$app" "$data_dir/logs"
 fi
 
@@ -114,11 +90,6 @@ ynh_script_progression "Upgrading system configurations related to $app..."
 
 ynh_config_add_nginx
 
-# Enable trailing slash redirect for sub-paths only (not for root "/")
-if [ "$path" != "/" ]; then
-    ynh_replace --match='#sub_path_only ' --replace='' --file="/etc/nginx/conf.d/$domain.d/$app.conf"
-fi
-
 ynh_config_add_systemd
 
 yunohost service add "$app" --description="Profilarr backend" --log="/var/log/$app/$app.log"
@@ -130,7 +101,7 @@ ynh_config_add_logrotate "/var/log/$app/"
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service="$app" --action="start"
+ynh_systemctl --service="$app" --action="start" --wait_until="Server ready" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT
