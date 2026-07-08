@@ -59,7 +59,7 @@ chmod 755 "/var/log/$app"
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service="$app" --action="start" --line_match="Server ready" --log_path="/var/log/$app/$app.log"
+ynh_systemctl --service="$app" --action="start" --wait_until="Server ready" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # RELOAD NGINX

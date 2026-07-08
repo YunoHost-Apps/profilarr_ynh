@@ -34,7 +34,7 @@ sso = false
 # toolchain itself (~200M), and `deno compile` output before cleanup.
 # Runtime footprint after cleanup is the compiled binary (~320M) + data.
 disk = "1.5G"
-ram.build = "2G"
+ram.build = "3G"
 ram.runtime = "256M"
 
 [install]
