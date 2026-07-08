@@ -20,10 +20,27 @@ profilarr_build_app
 ynh_script_progression "Deploying $app..."
 
 mkdir -p "$install_dir"
+
+#=================================================
+# TEMP DIAGNOSTIC - remove once asset 404 is understood
+#=================================================
+ynh_print_info "DIAG: build_dir=$profilarr_build_dir"
+ynh_print_info "DIAG: du -sh build_dir/static"
+du -sh "$profilarr_build_dir/static" 2>&1 || true
+ynh_print_info "DIAG: find build_dir/static (count + sample)"
+find "$profilarr_build_dir/static" 2>&1 | wc -l || true
+find "$profilarr_build_dir/static" -maxdepth 3 2>&1 | head -20 || true
+
 cp "$profilarr_build_dir/profilarr" "$install_dir/profilarr"
 cp -r "$profilarr_build_dir/static" "$install_dir/static"
 chmod 755 "$install_dir/profilarr"
 chown -R "$app:www-data" "$install_dir"
+
+ynh_print_info "DIAG: du -sh install_dir/static (post-copy)"
+du -sh "$install_dir/static" 2>&1 || true
+ynh_print_info "DIAG: find install_dir/static (count + sample, post-copy)"
+find "$install_dir/static" 2>&1 | wc -l || true
+find "$install_dir/static" -maxdepth 3 2>&1 | head -20 || true
 
 profilarr_cleanup_build
 
@@ -62,16 +79,6 @@ ynh_script_progression "Starting $app's systemd service..."
 
 # Start a systemd service
 ynh_systemctl --service="$app" --action="start" --wait_until="Server ready" --log_path="/var/log/$app/$app.log"
-
-#=================================================
-# TEMP DIAGNOSTIC - remove once asset 404 is understood
-#=================================================
-ynh_print_info "DIAG: listing $install_dir/static/_app/immutable/assets"
-ls -la "$install_dir/static/_app/immutable/assets" 2>&1 | head -5 || true
-diag_asset=$(find "$install_dir/static/_app/immutable/assets" -maxdepth 1 -name "0.*.css" | head -1)
-ynh_print_info "DIAG: asset on disk: $diag_asset"
-ynh_print_info "DIAG: direct curl against 127.0.0.1:$port"
-curl -sv "http://127.0.0.1:$port/_app/immutable/assets/$(basename "$diag_asset")" -o /dev/null 2>&1 | tail -30 || true
 
 #=================================================
 # END OF SCRIPT
