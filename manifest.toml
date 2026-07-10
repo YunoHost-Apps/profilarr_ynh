@@ -7,12 +7,12 @@ name = "Profilarr"
 description.en = "Configuration management tool for Radarr/Sonarr that automates importing and version control of custom formats and quality profiles."
 description.fr = "Outil de gestion de configuration pour Radarr/Sonarr qui automatise l'importation des formats personnalisés et des profils de qualité."
 
-version = "1.1.4~ynh1"
+version = "2.0.9~ynh1"
 
 maintainers = ["bowgartfield"]
 
 [upstream]
-license = "GPL-3.0-only"
+license = "AGPL-3.0-only"
 website = "https://dictionarry.dev/"
 #admindoc = "https://yunohost.org/packaging_apps"
 #userdoc = "https://yunohost.org/apps"
@@ -29,23 +29,29 @@ multi_instance = true
 ldap = false
 sso = false
 
-disk = "50M"
-ram.build = "50M"
-ram.runtime = "50M"
+# v2 is a Deno-compiled binary + SvelteKit frontend (was Python/React in v1).
+# Build needs headroom for `deno install` (node_modules ~300M), the Deno
+# toolchain itself (~200M), and `deno compile` output before cleanup.
+# Runtime footprint after cleanup is the compiled binary (~320M) + data.
+disk = "1.5G"
+ram.build = "3G"
+ram.runtime = "256M"
 
 [install]
     [install.domain]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
     type = "domain"
 
-    [install.path]
-    # this is a generic question - ask strings are automatically handled by YunoHost's core
-    type = "path"
-    default = "/profilarr"
+    # No [install.path] question: upstream Profilarr v2 (SvelteKit) has no
+    # configurable base path and has dozens of hardcoded absolute `/api/...`
+    # fetch() calls client-side. It cannot be served from a sub-path without
+    # forking upstream, so this app is installed at the root of a domain.
 
-    [install.init_main_permission]
-    type = "group"
-    default = "visitors"
+    # No [install.init_main_permission] question: Profilarr ships its own login
+    # and must be reachable by anyone so it can present that login. The main
+    # permission is therefore hardcoded to "visitors" (see [resources.permissions]).
+    # Without this, SSOwat gates "/" and bounces users to the YunoHost portal
+    # (302 -> /yunohost/sso), which loops.
 
     [install.admin]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
@@ -53,9 +59,21 @@ ram.runtime = "50M"
 
 [resources]
     [resources.sources.main]
-    url = "https://github.com/Dictionarry-Hub/profilarr/archive/refs/tags/v1.1.4.tar.gz"
-    sha256 = "6c3b0c507149d4a7222938844fd9c9b0933189dc6f1807a8c2877d5f826910e1"
+    url = "https://github.com/Dictionarry-Hub/profilarr/archive/refs/tags/v2.0.9.tar.gz"
+    sha256 = "2ff07ce99a5803b060a4c7db25110ff0883417b284fcd76e37a517b404ef486a"
     autoupdate.strategy = "latest_github_tag"
+
+    [resources.sources.deno]
+    # Build-time only toolchain to compile the app (deno install / vite build /
+    # deno compile), removed again after the build. Pinned to match upstream's
+    # Dockerfile builder image (denoland/deno:2.7.12) - bump this in lockstep
+    # when upstream bumps their Dockerfile's Deno version.
+    amd64.url = "https://github.com/denoland/deno/releases/download/v2.7.12/deno-x86_64-unknown-linux-gnu.zip"
+    amd64.sha256 = "4646ec32b4296fdf963a62a3df3d57e342a3c70376976e5690c34d42e23a3080"
+    arm64.url = "https://github.com/denoland/deno/releases/download/v2.7.12/deno-aarch64-unknown-linux-gnu.zip"
+    arm64.sha256 = "4116c1bb5fa2bba348a1f89c5392d5ecdbb505dd7166796870660556ea6c6c53"
+    in_subdir = false
+    extract = true
 
     [resources.system_user]
 
@@ -65,6 +83,9 @@ ram.runtime = "50M"
 
     [resources.permissions]
     main.url = "/"
+    # Always public: Profilarr handles its own authentication. If this is not
+    # "visitors", SSOwat protects "/" and redirects to the YunoHost portal.
+    main.allowed = "visitors"
 
     api.url = "/api"
     api.allowed = "visitors"
@@ -72,10 +93,7 @@ ram.runtime = "50M"
     api.protected = true
 
     [resources.ports]
-    main.default = 5000
-
-    [resources.nodejs]
-    version = "18"
+    main.default = 6868
 
     [resources.apt]
-    packages = "gcc python3-dev python3-venv libyaml-dev"
+    packages = "ca-certificates, curl, git, libsqlite3-0, tar, unzip"
