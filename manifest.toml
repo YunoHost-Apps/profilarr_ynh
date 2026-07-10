@@ -47,9 +47,11 @@ ram.runtime = "256M"
     # fetch() calls client-side. It cannot be served from a sub-path without
     # forking upstream, so this app is installed at the root of a domain.
 
-    [install.init_main_permission]
-    type = "group"
-    default = "visitors"
+    # No [install.init_main_permission] question: Profilarr ships its own login
+    # and must be reachable by anyone so it can present that login. The main
+    # permission is therefore hardcoded to "visitors" (see [resources.permissions]).
+    # Without this, SSOwat gates "/" and bounces users to the YunoHost portal
+    # (302 -> /yunohost/sso), which loops.
 
     [install.admin]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
@@ -81,6 +83,9 @@ ram.runtime = "256M"
 
     [resources.permissions]
     main.url = "/"
+    # Always public: Profilarr handles its own authentication. If this is not
+    # "visitors", SSOwat protects "/" and redirects to the YunoHost portal.
+    main.allowed = "visitors"
 
     api.url = "/api"
     api.allowed = "visitors"
